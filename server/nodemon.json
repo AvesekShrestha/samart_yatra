@@ -1,0 +1,15 @@
+{
+    "watch": [
+        "src"
+    ],
+    "ext": "js,json,ts",
+    "ignore": [
+        "node_modules",
+        "tests"
+    ],
+    "exec": "ts-node ./src/index.ts",
+    "events": {
+        "restart": "echo 'Nodemon restarted!'"
+    },
+    "legacyWatch": true
+}
