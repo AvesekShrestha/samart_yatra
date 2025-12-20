@@ -16,8 +16,8 @@ export const protect = (...allowedRoles: string[]) => {
 
             if (!accessToken) throw new UnauthorizedError("Unauthorized : Invalid token format")
 
-            const decoded: any = verifyToken(accessToken);
-            (req as any).user = decoded;
+            const decoded: any = verifyToken(accessToken)
+            req.user = decoded
 
             if (!allowedRoles.includes(decoded.role)) throw new UnauthorizedError("You are unauthorized to access")
 

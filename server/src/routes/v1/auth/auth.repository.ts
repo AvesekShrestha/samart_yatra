@@ -1,5 +1,5 @@
 import { IUser } from "../../../types/user.type"
-import { User } from "../../../models/user.model"
+import User from "../../../models/user.model"
 
 const AuthRepository = {
 
