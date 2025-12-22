@@ -29,7 +29,7 @@ export interface IUserResponse {
     email: string
     role: string
 }
-interface IToken {
+export interface IToken {
     accessToken: string
     refreshToken?: string
 }

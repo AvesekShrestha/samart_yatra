@@ -48,3 +48,18 @@ export class UnauthorizedError extends CustomError {
         Object.setPrototypeOf(this, UnauthorizedError.prototype)
     }
 }
+export class BadRequestError extends CustomError {
+
+    constructor(message: string = "Bad request", details?: IAurgmentException[]) {
+        super(message, 400, details)
+        Object.setPrototypeOf(this, BadRequestError.prototype)
+    }
+}
+
+export class InternalServerError extends CustomError {
+
+    constructor(message: string = "Internal server error", details?: IAurgmentException[]) {
+        super(message, 400, details)
+        Object.setPrototypeOf(this, InternalServerError.prototype)
+    }
+}

@@ -11,7 +11,7 @@ export const connectDb = async () => {
     })
 
     try {
-        await mongoose.connect(`${mongodb_uri}/${database}`)
+        await mongoose.connect(`${mongodb_uri}`, { dbName: database })
     } catch (error: any) {
         console.log(error.message)
     }

@@ -1,8 +1,8 @@
-import { AlreadyExistsError, InvalidPayloadError } from "../../../types/error.type";
+import { AlreadyExistsError, InvalidPayloadError, UnauthorizedError } from "../../../types/error.type";
 import { IAccessTokenPayload, IRefreshTokenPayload } from "../../../types/token.type";
-import { RegisterPayload, registerSchema, loginSchema, IUser, LoginPayload, ILoginResponse, IUserResponse } from "../../../types/user.type";
+import { RegisterPayload, registerSchema, loginSchema, IUser, LoginPayload, ILoginResponse, IUserResponse, IToken } from "../../../types/user.type";
 import { hashPassword, verifyPassword } from "../../../utils/password";
-import { generateAccessToken, generateRefreshToken } from "../../../utils/token";
+import { generateAccessToken, generateRefreshToken, verifyToken } from "../../../utils/token";
 import UserService from "../user/user.service";
 import AuthRepository from "./auth.repository";
 
@@ -16,7 +16,7 @@ const AuthService = {
         if (userExists) throw new AlreadyExistsError("User already exists")
 
         const hashedPassword: string = await hashPassword(paylaod.password)
-        const role: string = paylaod.role ? paylaod.role : "user"
+        const role: string = paylaod.role ? paylaod.role : "passenger"
 
         const newUser: IUser = {
             username: paylaod.username,
@@ -72,6 +72,29 @@ const AuthService = {
         }
         return response
     },
+    async refresh(refreshToken: string): Promise<IToken> {
+
+        if (!refreshToken) throw new UnauthorizedError("Refresh token missing")
+
+        const data: any = verifyToken(refreshToken)
+
+        if (!data.userId) throw new UnauthorizedError("Unauthorize")
+        const user = await UserService.getById(data.userId)
+
+        const accessTokenPayload: IAccessTokenPayload = {
+            userId: user._id.toString(),
+            username: user.username,
+            email: user.email,
+            role: user.role
+        }
+
+        const accessToken = generateAccessToken(accessTokenPayload);
+
+        const response: IToken = {
+            accessToken
+        }
+        return response
+    }
 }
 
 export default AuthService

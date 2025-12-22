@@ -8,7 +8,6 @@ export interface IRoute {
     start: ILocation
     end: ILocation
     fair: number
-    stops?: IBusstopResponse[]
 }
 
 export const routeZodSchema = z.object({
@@ -22,4 +21,5 @@ export type ZodRoute = z.infer<typeof routeZodSchema>
 
 export interface IRouteResponse extends IRoute {
     routeId: string
+    stops?: IBusstopResponse[]
 }

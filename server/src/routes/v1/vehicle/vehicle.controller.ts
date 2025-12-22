@@ -2,7 +2,6 @@ import { asyncHandler } from "../../../utils/asyncHandler"
 import { Request, Response } from "express"
 import { sendSuccess } from "../../../utils/responseHelper"
 import VehicleService from "./vehicle.service"
-import { InvalidPayloadError } from "../../../types/error.type"
 
 const VehicleController = {
 
@@ -11,10 +10,7 @@ const VehicleController = {
         const payload = req.body
         const { routeId } = req.params
 
-        if (!req.user) throw new InvalidPayloadError("request user is not set")
-        const userId = req.user.userId
-
-        const vehicle = await VehicleService.create(payload, routeId, userId)
+        const vehicle = await VehicleService.create(payload, routeId)
         sendSuccess(res, vehicle, "Vehicle created successfully", 201)
     }),
     getByRoute: asyncHandler(async (req: Request, res: Response) => {

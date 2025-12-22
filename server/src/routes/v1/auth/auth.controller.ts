@@ -28,6 +28,16 @@ const AuthController = {
             user
         }
         sendSuccess(res, response, "Loggin successful", 200)
+    })),
+    refresh: (asyncHandler(async (req: Request, res: Response) => {
+
+        const refreshToken = req.cookies.refreshToken || req.body.refreshToken
+
+        console.log(refreshToken)
+
+        const data = await AuthService.refresh(refreshToken)
+        sendSuccess(res, data, "Refreshed successfully", 200)
+
     }))
 }
 

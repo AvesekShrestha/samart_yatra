@@ -11,10 +11,19 @@ const userSchema = new mongoose.Schema<IUser>({
     password: String,
     role: {
         type: String,
-        enum: ["rider", "user", "admin"],
-        default: "user"
+        enum: ["rider", "passenger", "admin"],
+        default: "passenger"
     }
 })
+
+userSchema.virtual("vehicle", {
+    ref: "vehicle",
+    localField: "_id",
+    foreignField: "user"
+})
+
+userSchema.set("toJSON", { virtuals: true })
+userSchema.set("toObject", { virtuals: true })
 
 const User = mongoose.model<IUser>("user", userSchema)
 

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { CustomError, InvalidPayloadError } from "../types/error.type"
+import { CustomError, InternalServerError, InvalidPayloadError } from "../types/error.type"
 import { ZodError } from "zod"
 import { sendError } from "../utils/responseHelper"
 
@@ -11,4 +11,8 @@ export const errorMiddleware = (error: any, _req: Request, res: Response, _next:
     if (error instanceof ZodError) {
         sendError(res, 400, new InvalidPayloadError(error.message))
     }
+    if (error instanceof Error) {
+        sendError(res, 400, new InternalServerError(error.message))
+    }
+
 }

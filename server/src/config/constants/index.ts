@@ -6,3 +6,4 @@ export const port: number = Number(rawPort) || 8000
 export const mongodb_uri: string = process.env.MONGODB_URI || ""
 export const database: string = process.env.DATABASE || ""
 export const jwt_secret: string = process.env.JWT_SECRET || ""
+export const payment_key: string = process.env.PAYMENT_KEY || ""

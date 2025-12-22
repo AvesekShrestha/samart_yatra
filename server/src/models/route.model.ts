@@ -12,11 +12,16 @@ const routeSchema = new mongoose.Schema<IRoute>({
         type: locationSchema
     },
     fair: Number,
-    stops: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "busstop"
-    }]
 })
+
+routeSchema.virtual("stops", {
+    ref: "busstop",
+    localField: "_id",
+    foreignField: "route"
+})
+
+routeSchema.set("toJSON", { virtuals: true })
+routeSchema.set("toObject", { virtuals: true })
 
 const Route = mongoose.model<IRoute>("route", routeSchema)
 export default Route

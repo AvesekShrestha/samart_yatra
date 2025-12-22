@@ -15,7 +15,7 @@ const RouteService = {
             name: route.name,
             start: route.start,
             end: route.end,
-            fair: route.fair
+            fair: route.fair,
         }
         return response
 
@@ -28,7 +28,7 @@ const RouteService = {
             start: route.start,
             end: route.end,
             fair: route.fair,
-            stops: route.stops || []
+            stops: route.stops
         }))
 
         return response
@@ -44,7 +44,7 @@ const RouteService = {
             start: route.start,
             end: route.end,
             fair: route.fair,
-            stops: route.stops || []
+            stops: route.stops
         }
         return response
     }

@@ -23,7 +23,8 @@ export interface IVehicleResponse {
 }
 
 export const zodVehicleSchema = z.object({
-    vehicleNumber: z.string().trim()
+    vehicleNumber: z.string().trim(),
+    userId: z.string().trim()
 })
 
 
