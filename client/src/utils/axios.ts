@@ -16,7 +16,7 @@ export const useAxios = () => {
     }
 
     const axiosInstance = axios.create({
-        baseURL: import.meta.env.BASE_URL,
+        baseURL: import.meta.env.VITE_BASE_URL,
         withCredentials: true,
     })
 
@@ -26,7 +26,7 @@ export const useAxios = () => {
                 if (accessToken) {
                     if (isTokenExpired(accessToken)) {
                         const res = await axios.post(
-                            "/auth/refresh",
+                            "http://localhost:8000/api/v1/auth/refresh",
                             {},
                             { withCredentials: true }
                         )
@@ -44,36 +44,8 @@ export const useAxios = () => {
             (error) => Promise.reject(error)
         )
 
-        const responseInterceptor = axiosInstance.interceptors.response.use(
-            (response) => response,
-            async (error) => {
-                const originalRequest = error.config
-
-                if (
-                    error.response?.status === 401 &&
-                    !originalRequest._retry
-                ) {
-                    originalRequest._retry = true
-
-                    const res = await axios.post(
-                        "/auth/refresh",
-                        {},
-                        { withCredentials: true }
-                    )
-
-                    setAccessToken(res.data.accessToken)
-                    originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`
-
-                    return axiosInstance(originalRequest)
-                }
-
-                return Promise.reject(error)
-            }
-        )
-
         return () => {
             axiosInstance.interceptors.request.eject(requestInterceptor)
-            axiosInstance.interceptors.response.eject(responseInterceptor)
         }
     }, [accessToken, setAccessToken])
 

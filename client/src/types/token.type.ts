@@ -8,3 +8,7 @@ export interface IJwtDecodePayload {
     exp: number
 
 }
+
+export interface IToken {
+    accessToken: string
+}
