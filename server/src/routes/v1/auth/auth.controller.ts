@@ -15,6 +15,8 @@ const AuthController = {
     login: (asyncHandler(async (req: Request, res: Response) => {
         const payload: LoginPayload = req.body
 
+        console.log(payload)
+
         const { tokens, user }: ILoginResponse = await AuthService.login(payload)
 
 

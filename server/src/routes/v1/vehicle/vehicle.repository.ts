@@ -20,9 +20,15 @@ const VehicleRepository = {
             path: "user",
             select: "-password"
         })
-        if (!vehicles || vehicles.length == 0) throw new NotfoundError("No busstop data")
+        if (!vehicles) throw new NotfoundError("No vehicle data")
 
         return vehicles
+    },
+    async getByUser(userId: string) {
+        const vehicle = await Vehicle.findOne({ user: userId })
+
+        if (!vehicle) throw new NotfoundError("No vehicles")
+        return vehicle
     },
     async delete(vehicleId: string): Promise<boolean> {
         await Vehicle.findByIdAndDelete(vehicleId)

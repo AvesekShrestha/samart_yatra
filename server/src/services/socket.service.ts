@@ -10,6 +10,7 @@ const SocketService = {
             console.log("New user connected")
 
             socket.on("joinRoute", (payload: { routeId: string }) => {
+                console.log(`route-${payload.routeId}`)
                 socket.join(`route-${payload.routeId}`)
             })
             socket.on("locationUpdate", (payload: ISocketLocationUpdate) => {

@@ -31,6 +31,6 @@ app.use("/api", router)
 
 app.use(errorMiddleware)
 
-httpServer.listen(8000, () => {
+httpServer.listen(8000, "0.0.0.0", () => {
     console.log("server listenting at port 8000")
 })

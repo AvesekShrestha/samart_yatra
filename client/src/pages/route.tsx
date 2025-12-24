@@ -2,6 +2,7 @@ import type { IResponse } from "@/types/response.type";
 import type { IRouteResponse } from "@/types/route.type";
 import { useAxios } from "@/utils/axios";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 const Home = () => {
     const api = useAxios();
@@ -21,7 +22,9 @@ const Home = () => {
     return (
         <>
             {data?.map((route: IRouteResponse) => (
-                <div key={route.routeId}>{route.name}</div>
+                <Link key={route.routeId} to={`route/${route.routeId}`}>
+                    <div key={route.routeId}>{route.name}</div>
+                </Link>
             ))}
         </>
     );

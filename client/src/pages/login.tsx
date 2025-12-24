@@ -36,6 +36,7 @@ const Login = () => {
 
         },
         onSuccess: (data) => {
+            console.log(data)
             toast.success("Login successful")
             localStorage.setItem("accessToken", data.tokens.accessToken)
             navigate("/")
