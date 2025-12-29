@@ -1,11 +1,18 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { QrCode, Navigation2, Info, X, Loader2 } from "lucide-react";
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { toast } from "sonner";
+import { useAuth } from "@/context/authContext";
+
 import { RoutingMachine } from "./routingMachine";
-import { Icon } from "leaflet";
-import currentLocationIcon from "@/assets/passanger.png";
-import vehicleLocationIcon from "@/assets/vehicle.jpg";
+import vehicleIconImg from "@/assets/vehicle.jpg";
+import currentLocationIconImg from "@/assets/current.png";
+import busstopIconImg from "@/assets/busstop.png";
 
 import type { IRouteResponse } from "@/types/route.type";
 import type { IVehicleLocation } from "@/pages/routeDetail";
@@ -13,124 +20,115 @@ import type { IVehicleLocation } from "@/pages/routeDetail";
 interface RouteMapProps {
     route: IRouteResponse;
     vehicleLocations: Record<string, IVehicleLocation>;
+    userPosition: [number, number] | null;
+    isLocating: boolean;
+    currentVehicleId?: string;
 }
 
-const RouteMap = ({ route, vehicleLocations }: RouteMapProps) => {
-    const [position, setPosition] = useState<LatLngExpression | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-
-    const CurrentLocationIcon = new Icon({
-        iconUrl: currentLocationIcon,
-        iconSize: [30, 30],
-    });
-
-    const VehicleLocationIcon = new Icon({
-        iconUrl: vehicleLocationIcon,
-        iconSize: [30, 30],
-    });
-
-    const destination: LatLngExpression = [parseFloat(route.end.lat), parseFloat(route.end.long)];
-    const start: LatLngExpression = [parseFloat(route.start.lat), parseFloat(route.start.long)];
-
+const MapLogic = ({ position, recenterTrigger }: { position: [number, number] | null, recenterTrigger: number }) => {
+    const map = useMap();
     useEffect(() => {
-        if (!navigator.geolocation) {
-            console.log("Geolocation is not supported on this device");
-            setLoading(false);
-            return;
+        if (recenterTrigger > 0 && position) {
+            map.flyTo(position, 16, { duration: 1.5 });
         }
+    }, [recenterTrigger, position, map]);
+    return null;
+};
 
-        const watchId = navigator.geolocation.watchPosition(
-            (pos) => {
-                setPosition([pos.coords.latitude, pos.coords.longitude]);
-                setLoading(false);
-            },
-            (err) => {
-                console.log("Error getting current position", err);
-                setLoading(false);
-            },
-            {
-                enableHighAccuracy: true,
-                maximumAge: 1000,
-                timeout: 10000,
-            }
-        );
+const RouteMap = ({ route, vehicleLocations, userPosition, isLocating, currentVehicleId }: RouteMapProps) => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [showScanner, setShowScanner] = useState(false);
+    const [recenterCount, setRecenterCount] = useState(0);
 
-        // Cleanup on unmount
-        return () => {
-            navigator.geolocation.clearWatch(watchId);
-        };
-    }, []);
+    const start: LatLngExpression = [Number(route.start.lat), Number(route.start.long)];
+    const destination: LatLngExpression = [Number(route.end.lat), Number(route.end.long)];
 
-    if (loading || !position) {
-        return <div>Fetching location...</div>;
-    }
+    const icons = {
+        user: new L.Icon({ iconUrl: currentLocationIconImg, iconSize: [36, 36], iconAnchor: [18, 18], className: "rounded-full border-2 border-white" }),
+        vehicle: new L.Icon({ iconUrl: vehicleIconImg, iconSize: [36, 36], iconAnchor: [18, 18], className: "rounded-full border-2 border-white" }),
+        stop: new L.Icon({ iconUrl: busstopIconImg, iconSize: [32, 32], iconAnchor: [16, 16] })
+    };
+
+    const handleMainAction = () => {
+        if (user?.role === 'rider') {
+            if (!currentVehicleId) return toast.error("Vehicle data not found");
+            navigate("/share-qr", { state: { vehicleId: currentVehicleId, routeId: route.routeId, location: userPosition } });
+        } else {
+            setShowScanner(true);
+        }
+    };
 
     return (
-        <div style={{ position: "relative", height: "100vh", width: "100vw" }}>
-            <MapContainer
-                center={position}
-                zoom={13}
-                style={{ height: "100%", width: "100%" }}
-                scrollWheelZoom={true}
-            >
-                <TileLayer
-                    attribution='&copy; OpenStreetMap contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+        <div className="relative h-full w-full flex-1 overflow-hidden font-sans">
+            <MapContainer center={start} zoom={14} className="h-full w-full z-0" zoomControl={false}>
+                <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
 
-                {/* Current live location */}
-                <Marker position={position} icon={CurrentLocationIcon}>
-                    <Popup>Your current location</Popup>
-                </Marker>
+                <MapLogic position={userPosition} recenterTrigger={recenterCount} />
 
-                {/* Vehicles */}
-                {Object.values(vehicleLocations).map((vehicle) => (
-                    <Marker
-                        key={vehicle.vehicleId}
-                        position={[
-                            parseFloat(vehicle.location.lat),
-                            parseFloat(vehicle.location.long),
-                        ]}
-                        icon={VehicleLocationIcon}
-                    >
-                        <Popup>Vehicle: {vehicle.vehicleId}</Popup>
+                {/* User Marker */}
+                {userPosition && <Marker position={userPosition} icon={icons.user} />}
+
+                {/* Bus Stops */}
+                {route.stops.map((stop) => (
+                    <Marker key={stop.busstopId} position={[Number(stop.location.lat), Number(stop.location.long)]} icon={icons.stop}>
+                        <Popup><div className="text-xs font-bold">{stop.name}</div></Popup>
                     </Marker>
                 ))}
 
-                {/* Start & Destination */}
-                <Marker position={start}>
-                    <Popup>Start</Popup>
-                </Marker>
-                <Marker position={destination}>
-                    <Popup>Destination</Popup>
-                </Marker>
+                {/* Active Vehicles */}
+                {Object.values(vehicleLocations).map((v) => (
+                    <Marker key={v.vehicleId} position={[Number(v.location.lat), Number(v.location.long)]} icon={icons.vehicle}>
+                        <Popup><div className="text-xs font-bold uppercase">Bus: {v.vehicleId.slice(-4)}</div></Popup>
+                    </Marker>
+                ))}
 
-                {/* Routing line */}
                 <RoutingMachine start={start as [number, number]} end={destination as [number, number]} />
             </MapContainer>
 
-            {/* Overlay buttons */}
-            <div
-                style={{
-                    position: "absolute",
-                    bottom: "20px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    display: "flex",
-                    gap: "10px",
-                    zIndex: 1000,
-                    backgroundColor: "white",
-                    height: "60px",
-                    width: "50%",
-                    justifyContent: "space-around",
-                    alignItems: "center",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-                }}
-            >
-                <button className="map-btn">Option 1</button>
-                <button className="map-btn">Option 2</button>
+            {/* GPS Lock UI */}
+            {isLocating && !userPosition && (
+                <div className="absolute top-24 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 px-4 py-2 rounded-full shadow-sm flex items-center gap-2 border">
+                    <Loader2 className="animate-spin text-teal-600" size={14} />
+                    <span className="text-xs text-slate-600 font-medium">Getting GPS lock...</span>
+                </div>
+            )}
+
+            {/* Header Info */}
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] w-[92%] max-w-md">
+                <div className="bg-white/95 backdrop-blur-md border shadow-xl rounded-2xl p-4 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-sm font-bold text-slate-800">{route.name}</h2>
+                        <p className="text-[10px] text-teal-600 font-bold uppercase tracking-wider">
+                            Fare: Rs. {route.fair} • {route.stops.length} Stops
+                        </p>
+                    </div>
+                    <button className="p-2 bg-slate-50 rounded-full text-slate-400"><Info size={18} /></button>
+                </div>
             </div>
+
+            {/* Bottom Actions */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-sm">
+                <div className="bg-slate-900/95 shadow-2xl rounded-[2rem] p-2 flex items-center gap-2 border border-white/10">
+                    <button onClick={handleMainAction} className="flex-1 bg-teal-500 text-white font-bold py-4 px-6 rounded-[1.75rem] flex items-center justify-center gap-3 transition-all active:scale-95">
+                        <QrCode size={22} />
+                        <span>{user?.role === 'rider' ? "Share QR Code" : "Scan for Ticket"}</span>
+                    </button>
+                    <button onClick={() => userPosition ? setRecenterCount(c => c + 1) : toast.info("Waiting for GPS...")} className="bg-slate-800 text-white p-4 rounded-2xl">
+                        <Navigation2 size={22} className={`rotate-45 ${isLocating ? 'animate-pulse' : ''}`} />
+                    </button>
+                </div>
+            </div>
+
+            {showScanner && (
+                <div className="absolute inset-0 z-[2000] bg-black flex flex-col">
+                    <div className="p-6 flex justify-between items-center text-white">
+                        <h2 className="text-lg font-bold">Scan Vehicle QR</h2>
+                        <button onClick={() => setShowScanner(false)}><X size={24} /></button>
+                    </div>
+                    <Scanner onScan={(result) => console.log(result)} />
+                </div>
+            )}
         </div>
     );
 };

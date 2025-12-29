@@ -10,3 +10,10 @@ export interface IRouteResponse {
     fair: string
     stops?: IBusstopResponse[]
 }
+
+export interface IRouteRequest {
+    name: string
+    start: ILocation
+    end: ILocation
+    fair: number
+}

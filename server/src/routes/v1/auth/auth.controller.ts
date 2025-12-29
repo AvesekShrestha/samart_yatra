@@ -39,7 +39,13 @@ const AuthController = {
 
         const data = await AuthService.refresh(refreshToken)
         sendSuccess(res, data, "Refreshed successfully", 200)
+    })),
+    logout: (asyncHandler(async (_req: Request, res: Response) => {
 
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+        });
+        sendSuccess(res, null, "Logout successfully", 200)
     }))
 }
 

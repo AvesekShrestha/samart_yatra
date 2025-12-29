@@ -1,1 +1,31 @@
+.user-location-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.blue-dot {
+  width: 14px;
+  height: 14px;
+  background-color: #4285F4;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.pulse {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  background-color: rgba(66, 133, 244, 0.4);
+  border-radius: 50%;
+  animation: pulsate 2s infinite ease-out;
+  z-index: 1;
+}
+
+@keyframes pulsate {
+  0% { transform: scale(0.1, 0.1); opacity: 0.0; }
+  50% { opacity: 1.0; }
+  100% { transform: scale(1.2, 1.2); opacity: 0.0; }
+}

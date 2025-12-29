@@ -1,107 +1,81 @@
-import { useMutation } from "@tanstack/react-query"
-import { toast } from "sonner"
-import { useState } from "react"
-import type { IResponse } from "@/types/response.type"
-import type { IUser } from "@/types/auth.type"
-import type { IToken } from "@/types/token.type"
-import { useAxios } from "@/utils/axios"
-import axios, { AxiosError } from "axios"
-import { useNavigate } from "react-router-dom"
-
-interface ILoginPayload {
-    email: string
-    password: string
-}
-
-interface ILoginResponse {
-    tokens: IToken
-    user: IUser
-}
+import { useState } from "react";
+import { useAuth } from "@/context/authContext";
 
 const Login = () => {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+    const { loginMutation } = useAuth()
 
-    const api = useAxios()
-    const navigate = useNavigate()
-
-    const { mutate, isPending } = useMutation({
-        mutationFn: async (payload: ILoginPayload): Promise<ILoginResponse> => {
-            const response = await api.post<IResponse<ILoginResponse>>("/auth/login", payload)
-            if (!response.data.data) {
-                throw new Error(response.data.message)
-            }
-            return response.data.data
-
-        },
-        onSuccess: (data) => {
-            console.log(data)
-            toast.success("Login successful")
-            localStorage.setItem("accessToken", data.tokens.accessToken)
-            navigate("/")
-        },
-        onError: (error: AxiosError<IResponse<null>>) => {
-            if (axios.isAxiosError(error)) {
-                toast.error(error.response?.data?.message || "Login failed")
-            } else {
-                toast.error("Something went wrong")
-            }
-        },
-    })
-
-    const handleOnClick = () => {
-        mutate({ email, password })
-    }
+    const handleOnClick = async () => {
+        await loginMutation.mutate({ email, password })
+    };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-2xl font-bold text-blue-500 mb-2">Login</h1>
-                    <p className="text-gray-500 text-sm">Making Nepal's Public Transport Smarter</p>
+        <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc] px-4 font-sans">
+            <div className="w-full max-w-[400px]">
+                {/* Minimal Logo/Brand Section */}
+                <div className="text-center mb-10">
+                    <div className="inline-block px-3 py-1 bg-teal-50 text-teal-700 text-xs font-bold uppercase tracking-widest rounded-full mb-4">
+                        Smarter Nepal
+                    </div>
+                    <h1 className="text-2xl font-semibold text-gray-900">Sign in to your account</h1>
+                    <p className="text-gray-500 text-sm mt-2">Enter your details to access the portal</p>
                 </div>
 
-                {/* Form */}
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-gray-700 text-sm font-medium mb-2">
-                            E-mail
-                        </label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                            placeholder="Enter your email"
-                        />
-                    </div>
+                {/* Simplified Card */}
+                <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+                    <div className="space-y-6">
+                        {/* Email Field */}
+                        <div>
+                            <label className="block text-gray-700 text-xs font-bold uppercase tracking-wider mb-2">
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all text-sm"
+                                placeholder="name@email.com"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-gray-700 text-sm font-medium mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                            placeholder="Enter your password"
-                        />
-                    </div>
+                        {/* Password Field */}
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="block text-gray-700 text-xs font-bold uppercase tracking-wider">
+                                    Password
+                                </label>
+                                <button className="text-xs font-semibold text-teal-600 hover:text-teal-700">
+                                    Forgot?
+                                </button>
+                            </div>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all text-sm"
+                                placeholder="••••••••"
+                            />
+                        </div>
 
-                    <button 
-                        onClick={handleOnClick} 
-                        disabled={isPending}
-                        className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-                    >
-                        {isPending ? "Logging in..." : "Login"}
-                    </button>
+                        {/* Button */}
+                        <button
+                            onClick={handleOnClick}
+                            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg shadow-sm transition-colors duration-200 disabled:opacity-50 flex items-center justify-center"
+                        >
+                            {loginMutation.isPending ? "Authenticating..." : "Sign In"}
+                        </button>
+                    </div>
                 </div>
+
+                <p className="text-center text-gray-500 text-sm mt-8">
+                    Don't have an account?{" "}
+                    <button className="text-gray-900 font-semibold hover:underline">Sign up</button>
+                </p>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;

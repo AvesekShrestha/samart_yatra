@@ -1,26 +1,55 @@
-import { Toaster } from "sonner"
-import { Routes, Route } from "react-router-dom"
-import Home from "@/pages/route"
-import Login from "@/pages/login"
-import AuthProvider from "./context/authContext"
-import RouteDetail from "@/pages/routeDetail"
-import RouteMap from "./components/custom/map"
+import { Toaster } from "sonner";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Home from "@/pages/home";
+import Login from "@/pages/login";
+import AuthProvider, { useAuth } from "./context/authContext";
+import RouteDetail from "@/pages/routeDetail";
+import ShareQrPage from "./components/custom/qr";
+import Layout from "@/pages/layout";
 
-const App = () => {
+import AdminDashboard from "@/pages/admin/dashboard";
+import RouteManagement from "@/pages/admin/route"
+import BusStopManagement from "./pages/admin/busstop";
+
+const AppRoutes = () => {
+    const { user, isLoading } = useAuth();
+
+    if (isLoading) return null;
 
     return (
-        <>
-            <AuthProvider>
-                <Toaster />
-                <Routes>
-                    <Route element={<RouteDetail />} path="/route/:routeId" />
-                    <Route element={<Home />} path="/" />
-                    <Route element={<Login />} path="/login" />
-                    <Route element={<RouteMap />} path="/map" />
-                </Routes>
-            </AuthProvider>
-        </>
-    )
-}
+        <Routes>
+            <Route element={<Login />} path="/login" />
 
-export default App
+            <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route element={<RouteDetail />} path="route/:routeId" />
+                <Route element={<ShareQrPage />} path="share-qr" />
+
+                {user?.role === "admin" && (
+                    <Route path="admin">
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="routes" element={<RouteManagement />} />
+                        <Route path="busstops" element={<BusStopManagement />} />
+                    </Route>
+                )}
+
+
+                <Route
+                    path="admin/*"
+                    element={<Navigate to={user ? "/" : "/login"} replace />}
+                />
+            </Route>
+        </Routes>
+    );
+};
+
+const App = () => {
+    return (
+        <AuthProvider>
+            <Toaster position="top-right" richColors />
+            <AppRoutes />
+        </AuthProvider>
+    );
+};
+
+export default App;

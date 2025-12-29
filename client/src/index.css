@@ -136,5 +136,5 @@
 }
 
 .leaflet-routing-container .leaflet-routing-container-hide {
-  display: none;
+  display: !none;
 }
