@@ -2,6 +2,7 @@ import { InvalidPayloadError } from "../../../types/error.type";
 import UserRepository from "./user.repository";
 import { IVehicleResponse } from "../../../types/vehicle.type";
 import VehicleRepository from "../vehicle/vehicle.repository";
+import { IUserResponse } from "../../../types/user.type";
 
 
 
@@ -32,6 +33,18 @@ const UserService = {
             vehicleId: vehicle._id.toString(),
             vehicleNumber: vehicle.vehicleNumber,
         }
+        return response
+    },
+    async getAll(): Promise<IUserResponse[]> {
+        const users = await UserRepository.getAll()
+
+        const response: IUserResponse[] = users.map((user) => ({
+            userId: user._id.toString(),
+            username: user.username,
+            email: user.email,
+            role: user.role
+        }))
+
         return response
     }
 }

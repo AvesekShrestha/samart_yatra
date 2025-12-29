@@ -4,6 +4,7 @@ import UserController from "./user.controller"
 
 const router = express.Router()
 
+router.get("/", UserController.getAll)
 router.get("/vehicle", protect("rider"), UserController.getUserVehicle)
 
 export default router

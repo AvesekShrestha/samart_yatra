@@ -31,6 +31,13 @@ const UserRepository = {
 
         if (!user) return false
         return true
+    },
+    async getAll() {
+        const users = await User.find()
+
+        if (!users) throw new NotfoundError("No user data")
+
+        return users
     }
 }
 

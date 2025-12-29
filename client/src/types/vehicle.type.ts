@@ -6,6 +6,6 @@ export interface IVehicleResponse {
 }
 
 export interface IVehicleRequest {
-    name: string
-    location: ILocation
+    vehicleNumber: string
+    userId: ILocation
 }

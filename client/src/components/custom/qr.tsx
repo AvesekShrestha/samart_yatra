@@ -7,10 +7,8 @@ const ShareQrPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Extract data passed from RouteMap
     const { vehicleId, routeId, location: userLocation } = location.state || {};
 
-    // Safety check: if accessed directly without state, go back
     if (!vehicleId || !routeId) {
         return (
             <div className="h-screen w-full flex flex-col items-center justify-center p-6 text-center">
@@ -25,13 +23,11 @@ const ShareQrPage = () => {
         );
     }
 
-    // This is the data the passenger's scanner will read
     const qrData = JSON.stringify({
         vehicleId,
         routeId,
         lat: userLocation?.[0],
-        lng: userLocation?.[1],
-        timestamp: new Date().toISOString()
+        long: userLocation?.[1],
     });
 
     const handleShare = async () => {
@@ -52,7 +48,6 @@ const ShareQrPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-            {/* Header */}
             <div className="p-6 flex items-center justify-between bg-white border-b border-slate-100">
                 <button
                     onClick={() => navigate(-1)}
@@ -70,7 +65,6 @@ const ShareQrPage = () => {
             </div>
 
             <main className="flex-1 flex flex-col items-center justify-center p-6 gap-8">
-                {/* QR Container */}
                 <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 relative group">
                     <div className="bg-white p-4 rounded-2xl">
                         <QRCode
@@ -78,17 +72,15 @@ const ShareQrPage = () => {
                             size={250}
                             style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                             viewBox={`0 0 256 256`}
-                            fgColor="#0f172a" // slate-900
+                            fgColor="#0f172a"
                         />
                     </div>
 
-                    {/* Visual Flairs */}
                     <div className="absolute -top-3 -right-3 bg-teal-500 text-white p-2 rounded-lg rotate-12 shadow-lg">
                         <QrCode size={20} />
                     </div>
                 </div>
 
-                {/* Details Card */}
                 <div className="w-full max-w-sm bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
                     <div className="space-y-4">
                         <div className="flex items-center gap-4">
@@ -120,7 +112,6 @@ const ShareQrPage = () => {
                 </p>
             </main>
 
-            {/* Footer Static Info */}
             <div className="p-8 text-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 rounded-full text-xs font-bold uppercase tracking-widest">
                     <span className="w-2 h-2 bg-teal-500 rounded-full animate-ping" />

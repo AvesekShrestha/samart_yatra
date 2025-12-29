@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAxios } from "@/utils/axios";
 
-// Import your existing component
 import { RoutingMachine } from "./routingMachine";
 
 import type { IResponse } from "@/types/response.type";
@@ -74,7 +73,6 @@ const RouteForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
     return (
         <div className="space-y-5">
-            {/* Input Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label>Route Name</Label>
@@ -94,7 +92,6 @@ const RouteForm = ({ onSuccess }: { onSuccess: () => void }) => {
                 </div>
             </div>
 
-            {/* Picker Buttons */}
             <div className="grid grid-cols-2 gap-4">
                 <Button
                     type="button"
@@ -116,10 +113,8 @@ const RouteForm = ({ onSuccess }: { onSuccess: () => void }) => {
                 </Button>
             </div>
 
-            {/* Map Preview */}
             <div className={`h-[350px] w-full rounded-xl border relative overflow-hidden shadow-inner bg-slate-100 transition-all ${picking ? 'ring-2 ring-blue-500 cursor-crosshair' : ''}`}>
 
-                {/* Floating Instruction Badge (Top Center) */}
                 {picking && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] pointer-events-none animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="bg-slate-900/90 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl backdrop-blur-sm border border-white/20">
@@ -144,12 +139,10 @@ const RouteForm = ({ onSuccess }: { onSuccess: () => void }) => {
                     />
                 </MapContainer>
 
-                {/* Map Overlay for 'Picking' State */}
                 {picking && (
                     <div className="absolute inset-0 bg-blue-500/5 pointer-events-none z-[1000]" />
                 )}
             </div>
-            {/* Submit Button */}
             <Button
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11"
                 onClick={handleAddRoute}

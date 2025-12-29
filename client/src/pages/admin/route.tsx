@@ -1,38 +1,27 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Map, IndianRupee, BusFront, Loader2, Search, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Map, IndianRupee, BusFront, Loader2, Search, X, ChevronDown, ChevronUp, MapPin, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAxios } from "@/utils/axios";
 
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import RouteForm from "@/components/custom/routeForm";
 import type { IResponse } from "@/types/response.type";
 import type { IRouteResponse } from "@/types/route.type";
 
 const RouteManagement = () => {
+    const [expandedRoute, setExpandedRoute] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     const api = useAxios();
     const queryClient = useQueryClient();
 
-    // 1. Fetch Routes Query
     const { data: routes = [], isLoading } = useQuery({
         queryKey: ["routes"],
         queryFn: async () => {
@@ -44,10 +33,6 @@ const RouteManagement = () => {
             return response.data.data;
         }
     });
-
-    const filteredRoutes = routes.filter((route) =>
-        route.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
@@ -64,23 +49,28 @@ const RouteManagement = () => {
         },
     });
 
-    const handleDelete = (id: string) => {
+    const handleDelete = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation(); // Don't toggle the accordion when clicking delete
         if (window.confirm("Are you sure you want to delete this route?")) {
             deleteMutation.mutate(id);
         }
     };
+
+    const filteredRoutes = routes.filter((route) =>
+        route.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
             <div className="max-w-6xl mx-auto space-y-6">
 
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2 text-slate-900">
-                            <Map className="text-blue-600 h-6 w-6" /> Route Management
+                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-slate-900">
+                            <Map className="text-blue-600 h-8 w-8" /> Route Management
                         </h1>
-                        <p className="text-muted-foreground text-sm">Organize and monitor transit paths and pricing.</p>
+                        <p className="text-slate-500 mt-1">Organize and monitor transit paths and pricing.</p>
                     </div>
 
                     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -101,109 +91,107 @@ const RouteManagement = () => {
                     </Dialog>
                 </div>
 
-                {/* Search and Filters */}
                 <div className="relative max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
                         placeholder="Search routes by name..."
-                        className="pl-10 pr-10 bg-white border-slate-200 focus:ring-blue-500"
+                        className="pl-10 pr-10 bg-white border-slate-200"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     {searchQuery && (
-                        <button
-                            onClick={() => setSearchQuery("")}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                        >
+                        <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                             <X className="h-4 w-4" />
                         </button>
                     )}
                 </div>
 
-                {/* Table Section */}
-                <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-                    <Table>
-                        <TableHeader className="bg-slate-50/80">
-                            <TableRow>
-                                <TableHead className="w-[300px] font-bold text-slate-700">Route Details</TableHead>
-                                <TableHead className="font-bold text-slate-700">Coordinates (Start/End)</TableHead>
-                                <TableHead className="font-bold text-slate-700 text-center">Base Fare</TableHead>
-                                <TableHead className="text-right font-bold text-slate-700">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="h-64 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-2">
-                                            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                                            <span className="text-slate-500 font-medium">Fetching routes...</span>
+                <div className="space-y-4">
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed">
+                            <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
+                            <p className="text-slate-500 font-medium">Fetching transit network...</p>
+                        </div>
+                    ) : filteredRoutes.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed text-slate-400">
+                            <BusFront className="h-12 w-12 mb-2 opacity-20" />
+                            <p>No routes found.</p>
+                        </div>
+                    ) : (
+                        filteredRoutes.map((route) => (
+                            <Card key={route.routeId} className={`overflow-hidden transition-all border-none shadow-sm ring-1 ${expandedRoute === route.routeId ? 'ring-blue-500 shadow-md' : 'ring-slate-200'}`}>
+                                <div
+                                    className="p-5 flex items-center justify-between cursor-pointer bg-white hover:bg-slate-50 transition-colors"
+                                    onClick={() => setExpandedRoute(expandedRoute === route.routeId ? null : route.routeId)}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-colors ${expandedRoute === route.routeId ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>
+                                            <BusFront size={24} />
                                         </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : filteredRoutes.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="h-64 text-center">
-                                        <div className="flex flex-col items-center justify-center text-slate-400">
-                                            <BusFront className="h-12 w-12 mb-2 opacity-20" />
-                                            <p>{searchQuery ? "No routes match your search." : "No routes registered yet."}</p>
+                                        <div>
+                                            <h3 className="font-bold text-slate-800 text-lg">{route.name}</h3>
+                                            <div className="flex items-center gap-3 mt-1">
+                                                <span className="flex items-center text-sm font-bold text-green-600">
+                                                    <IndianRupee size={14} className="mr-0.5" /> {route.fair}
+                                                </span>
+                                                <span className="text-xs text-slate-400 flex items-center gap-1">
+                                                    <MapPin size={12} /> {route.stops?.length || 0} stops
+                                                </span>
+                                            </div>
                                         </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                filteredRoutes.map((route) => (
-                                    <TableRow key={route.routeId} className="hover:bg-blue-50/30 transition-colors group">
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
-                                                    <BusFront size={20} />
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="hidden md:flex items-center gap-1 text-slate-300 mr-4">
+                                            {expandedRoute === route.routeId ? <ChevronUp /> : <ChevronDown />}
+                                        </div>
+                                        <Button variant="outline" size="icon" className="h-9 w-9 text-slate-400 hover:text-blue-600" onClick={(e) => e.stopPropagation()}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-9 w-9 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                            disabled={deleteMutation.isPending}
+                                            onClick={(e) => handleDelete(e, route.routeId)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {expandedRoute === route.routeId && (
+                                    <CardContent className="p-6 border-t bg-slate-50/30 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-2 duration-200">
+                                        <div className="space-y-4">
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                                <MapPin className="h-3 w-3" /> Technical Geometry
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-white p-3 rounded-xl border border-slate-200">
+                                                    <p className="text-[10px] font-bold text-green-600 uppercase mb-1">Start Point</p>
+                                                    <p className="text-sm font-mono text-slate-600">{route.start.lat.toFixed(4)}, {route.start.long.toFixed(4)}</p>
                                                 </div>
-                                                <span className="font-bold text-slate-700">{route.name}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1">
-                                                <div className="text-[11px] flex items-center gap-1 text-slate-500 font-mono">
-                                                    <span className="text-green-600 font-bold uppercase">Start:</span>
-                                                    {Number(route.start.lat).toFixed(3)}, {Number(route.start.long).toFixed(3)}
-                                                </div>
-                                                <div className="text-[11px] flex items-center gap-1 text-slate-500 font-mono">
-                                                    <span className="text-red-500 font-bold uppercase">End:</span>
-                                                    {Number(route.end.lat).toFixed(3)}, {Number(route.end.long).toFixed(3)}
+                                                <div className="bg-white p-3 rounded-xl border border-slate-200">
+                                                    <p className="text-[10px] font-bold text-red-500 uppercase mb-1">End Point</p>
+                                                    <p className="text-sm font-mono text-slate-600">{route.end.lat.toFixed(4)}, {route.end.long.toFixed(4)}</p>
                                                 </div>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm font-bold border border-green-100">
-                                                <IndianRupee size={12} className="mr-1" />
-                                                {route.fair}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg border-slate-200 text-slate-600 hover:text-blue-600">
-                                                    <Pencil size={15} />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-lg border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50"
-                                                    disabled={deleteMutation.isPending}
-                                                    onClick={() => handleDelete(route.routeId)}
-                                                >
-                                                    {deleteMutation.isPending ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        <Trash2 size={15} />
-                                                    )}
-                                                </Button>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                                <Hash className="h-3 w-3" /> System Identifiers
+                                            </h4>
+                                            <div className="bg-white p-3 rounded-xl border border-slate-200">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Route ID</p>
+                                                <p className="text-sm font-mono text-slate-600 break-all">{route.routeId}</p>
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                        </div>
+                                    </CardContent>
+                                )}
+                            </Card>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

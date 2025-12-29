@@ -3,7 +3,7 @@ import {
     LayoutDashboard,
     User2,
     Bus,
-    Map,
+    Settings,
     History,
     MapPin,
 } from "lucide-react";
@@ -14,8 +14,8 @@ import { Link } from "react-router-dom";
 
 const publicItems = [
     { title: "Home", url: "/", icon: LayoutDashboard },
-    { title: "Live Map", url: "/map", icon: Map },
-    { title: "Route History", url: "/history", icon: History },
+    { title: "Settings", url: "#", icon: Settings },
+    { title: "History", url: "/history", icon: History },
 ];
 
 const adminItems = [

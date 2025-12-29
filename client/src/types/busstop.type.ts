@@ -5,6 +5,9 @@ export interface IBusstopResponse {
     name: string
     location: ILocation
     route: string
-
 }
 
+export interface IBusstopRequest {
+    name: string
+    location: ILocation
+}

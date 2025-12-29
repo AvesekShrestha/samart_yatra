@@ -5,15 +5,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Save, Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAxios } from "@/utils/axios";
+import { RoutingMachine } from "./routingMachine";
 
-const BusStopForm = ({ routeId, onSuccess }: { routeId: string, onSuccess: () => void }) => {
+interface BusStopFormProps {
+    routeId: string;
+    routeStart: [number, number];
+    routeEnd: [number, number];
+    onSuccess: () => void;
+}
+
+const BusStopForm = ({ routeId, routeStart, routeEnd, onSuccess }: BusStopFormProps) => {
     const api = useAxios();
+    const queryClient = useQueryClient();
     const [isPicking, setIsPicking] = useState(false);
+
     const [formData, setFormData] = useState({
         name: "",
-        location: { lat: 27.7172, long: 85.3240 }
+        location: { lat: routeStart[0], long: routeStart[1] }
     });
 
     const mutation = useMutation({
@@ -22,6 +32,7 @@ const BusStopForm = ({ routeId, onSuccess }: { routeId: string, onSuccess: () =>
         },
         onSuccess: () => {
             toast.success("Stop registered!");
+            queryClient.invalidateQueries({ queryKey: ["routes-with-stops"] });
             onSuccess();
         }
     });
@@ -30,9 +41,12 @@ const BusStopForm = ({ routeId, onSuccess }: { routeId: string, onSuccess: () =>
         useMapEvents({
             click(e) {
                 if (isPicking) {
-                    setFormData(prev => ({ ...prev, location: { lat: e.latlng.lat, long: e.latlng.lng } }));
+                    setFormData(prev => ({
+                        ...prev,
+                        location: { lat: e.latlng.lat, long: e.latlng.lng }
+                    }));
                     setIsPicking(false);
-                    toast.success("Location selected!");
+                    toast.success("Stop location set!");
                 }
             },
         });
@@ -57,32 +71,41 @@ const BusStopForm = ({ routeId, onSuccess }: { routeId: string, onSuccess: () =>
                 onClick={() => setIsPicking(!isPicking)}
             >
                 <MapPin className={`mr-2 h-4 w-4 ${isPicking ? "animate-pulse" : ""}`} />
-                {isPicking ? "Cancel Selection" : "Pick Location on Map"}
+                {isPicking ? "Cancel Selection" : "Pick Stop Location on Map"}
             </Button>
 
-            <div className={`h-[300px] w-full rounded-xl border relative overflow-hidden bg-slate-100 ${isPicking ? 'ring-2 ring-blue-500 cursor-crosshair' : ''}`}>
+            <div className={`h-[350px] w-full rounded-xl border relative overflow-hidden bg-slate-100 ${isPicking ? 'ring-2 ring-blue-500 cursor-crosshair' : ''}`}>
                 {isPicking && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] pointer-events-none">
                         <div className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2">
                             <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse" />
-                            CLICK ON MAP TO SET STOP
+                            CLICK ON THE ROUTE TO PLACE STOP
                         </div>
                     </div>
                 )}
 
-                <MapContainer center={[formData.location.lat, formData.location.long]} zoom={15} className="h-full w-full">
+                <MapContainer center={routeStart} zoom={14} className="h-full w-full">
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <MapEvents />
-                    <Marker position={[formData.location.lat, formData.location.long]} />
+
+                    <RoutingMachine start={routeStart} end={routeEnd} />
+
+                    <Marker position={routeStart} />
+                    <Marker position={routeEnd} />
+
+                    <Marker
+                        position={[formData.location.lat, formData.location.long]}
+                        zIndexOffset={1000}
+                    />
                 </MapContainer>
             </div>
 
             <Button
-                className="w-full bg-blue-600"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 disabled={mutation.isPending || !formData.name}
                 onClick={() => mutation.mutate(formData)}
             >
-                {mutation.isPending ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />}
+                {mutation.isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
                 Save Bus Stop
             </Button>
         </div>

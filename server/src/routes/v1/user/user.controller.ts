@@ -10,6 +10,10 @@ const UserController = {
         const response = await UserService.getUserVehicle(userId)
 
         sendSuccess(res, response, "Fetched user vehicle successfully", 200)
+    }),
+    getAll: asyncHandler(async (_req: Request, res: Response) => {
+        const response = await UserService.getAll()
+        sendSuccess(res, response, "User fetched successfully", 200)
     })
 }
 

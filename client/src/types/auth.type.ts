@@ -22,3 +22,5 @@ export interface ILoginCredentials {
 export interface IRegisterCredentials extends ILoginCredentials {
     username: string
 }
+
+export interface IUserResponse extends IUser { }
