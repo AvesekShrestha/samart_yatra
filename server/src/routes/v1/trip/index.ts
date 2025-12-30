@@ -4,6 +4,7 @@ import { protect } from "../../../middlewares/auth.middleware"
 
 const router = express.Router()
 
-router.use("/", protect("passenger", "rider", "admin"), TripController.handleQrScan)
+router.post("/", protect("passenger", "rider", "admin"), TripController.handleQrScan)
+router.post("/payment/verify", protect("passenger"), TripController.handlePaymentVerification)
 
 export default router

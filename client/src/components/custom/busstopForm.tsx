@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,11 @@ const BusStopForm = ({ routeId, routeStart, routeEnd, onSuccess }: BusStopFormPr
         name: "",
         location: { lat: routeStart[0], long: routeStart[1] }
     });
+
+    // 1. Memoize coordinates to prevent RoutingMachine from re-mounting 
+    // when formData changes.
+    const startPos = useMemo(() => routeStart, [routeStart[0], routeStart[1]]);
+    const endPos = useMemo(() => routeEnd, [routeEnd[0], routeEnd[1]]);
 
     const mutation = useMutation({
         mutationFn: async (payload: any) => {
@@ -79,19 +84,27 @@ const BusStopForm = ({ routeId, routeStart, routeEnd, onSuccess }: BusStopFormPr
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] pointer-events-none">
                         <div className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2">
                             <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse" />
-                            CLICK ON THE ROUTE TO PLACE STOP
+                            CLICK ON THE MAP TO PLACE STOP
                         </div>
                     </div>
                 )}
 
-                <MapContainer center={routeStart} zoom={14} className="h-full w-full">
+                <MapContainer
+                    center={startPos}
+                    zoom={14}
+                    className="h-full w-full"
+                    // 2. Prevent the map from tracking window resize, 
+                    // which can sometimes trigger a refocus
+                    trackResize={false}
+                >
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <MapEvents />
 
-                    <RoutingMachine start={routeStart} end={routeEnd} />
+                    {/* Use memoized positions here */}
+                    <RoutingMachine start={startPos} end={endPos} />
 
-                    <Marker position={routeStart} />
-                    <Marker position={routeEnd} />
+                    <Marker position={startPos} />
+                    <Marker position={endPos} />
 
                     <Marker
                         position={[formData.location.lat, formData.location.long]}

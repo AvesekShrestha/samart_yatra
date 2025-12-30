@@ -3,6 +3,7 @@ import Trip from "../../../models/trip.model";
 import { ITripRequest } from "../../../types/trip.type";
 import { IUserResponse } from "../../../types/user.type";
 import { IVehicleResponse } from "../../../types/vehicle.type";
+import { NotfoundError } from "../../../types/error.type";
 
 const TripRepository = {
     async create(payload: ITripRequest, session?: ClientSession) {
@@ -29,6 +30,14 @@ const TripRepository = {
         if (!trip) return null;
         return trip;
     },
+    async getByPidx(pidx: string) {
+        const trip = await Trip.findOne({ pidx })
+
+        if (!trip) throw new NotfoundError("Trip doesnot exists")
+        return trip;
+    }
 };
+
+
 
 export default TripRepository;

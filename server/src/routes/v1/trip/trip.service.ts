@@ -4,7 +4,7 @@ import TripRepository from "./trip.repository";
 import axios from "axios";
 import { payment_key } from "../../../config/constants";
 import mongoose from "mongoose";
-import { BadRequestError, UnauthorizedError } from "../../../types/error.type";
+import { BadRequestError, InvalidPayloadError, PaymentError, UnauthorizedError } from "../../../types/error.type";
 
 const TripService = {
 
@@ -24,7 +24,7 @@ const TripService = {
                 session.startTransaction();
 
                 const tripPayload: ITripRequest = {
-                    boardingStop: payload.boardingStop,
+                    boardingStop: payload.location,
                     vehicle: payload.vehicle,
                     user: userId
                 };
@@ -43,7 +43,7 @@ const TripService = {
             } else {
                 session.startTransaction();
 
-                trip.exitStop = payload.exitStop;
+                trip.exitStop = payload.location;
                 trip.paymentStatus = "pending";
                 trip.fare = 25;
                 await trip.save({ session });
@@ -63,10 +63,6 @@ const TripService = {
                     }]
                 };
 
-                console.log(paymentRequestPayload)
-                console.log(payment_key)
-
-                console.log(`Key ${payment_key}`)
                 const paymentResponse = await axios.post<IPaymentResponse>(
                     "https://dev.khalti.com/api/v2/epayment/initiate/",
                     paymentRequestPayload,
@@ -77,6 +73,10 @@ const TripService = {
                         }
                     }
                 );
+
+                if (!paymentResponse.data) throw new PaymentError("Payment Initalization Failed")
+                trip.pidx = paymentResponse.data.pidx!
+                await trip.save({ session });
 
                 await session.commitTransaction();
 
@@ -101,7 +101,37 @@ const TripService = {
         } finally {
             session.endSession();
         }
+    },
+    async handlePaymentVerification(pidx: string) {
+
+        if (!pidx) throw new InvalidPayloadError("pidx is required")
+
+        const khaltiResponse = await axios.post(
+            "https://dev.khalti.com/api/v2/epayment/lookup/",
+            { pidx },
+            {
+                headers: {
+                    'Authorization': `Key ${payment_key}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const paymentInfo = khaltiResponse.data;
+
+        const trip = await TripRepository.getByPidx(paymentInfo.pidx)
+
+        if (paymentInfo.status === "Completed") {
+            trip.amount = paymentInfo.total_amount / 100;
+            trip.paymentStatus = "completed"
+            await trip.save()
+        }
+        else {
+            throw new PaymentError("Payment Verfication Failed")
+        }
+
     }
+
 };
 
 export default TripService;

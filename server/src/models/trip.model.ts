@@ -15,6 +15,11 @@ const tripSchema = new mongoose.Schema<ITrip>({
         enum: ["pending", "completed", "failed"],
         default: "pending"
     },
+    pidx: String,
+    amount: {
+        type: Number,
+        default: 0
+    },
     vehicle: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "vehicle"

@@ -10,6 +10,8 @@ export interface ITrip {
     exitStop?: ILocation
     fare: number
     paymentStatus: "pending" | "completed" | "failed"
+    pidx: string
+    amount: number
     vehicle: Types.ObjectId
     user: Types.ObjectId
 }
@@ -39,8 +41,7 @@ export interface IQrScanResponse {
 
 export const zodTripSchema = z.object({
     vehicle: z.string().trim(),
-    boardingStop: zodLocationSchema.optional(),
-    exitStop: zodLocationSchema.optional()
+    location: zodLocationSchema
 })
 
 export type ZodTrip = z.infer<typeof zodTripSchema>

@@ -18,7 +18,7 @@ import busstopIconImg from "@/assets/busstop.png";
 
 import type { IRouteResponse } from "@/types/route.type";
 import type { IVehicleLocation } from "@/pages/routeDetail";
-import type { ITripRequest } from "@/types/trip.type";
+import type { IScanResponse, ITripRequest } from "@/types/trip.type";
 import type { IResponse } from "@/types/response.type";
 
 interface RouteMapProps {
@@ -66,14 +66,25 @@ const RouteMap = ({ route, vehicleLocations, userPosition, isLocating, currentVe
 
     const scanMutation = useMutation({
         mutationFn: async (payload: ITripRequest) => {
-            const response = await api.post(`/trip`, payload)
-            return response.data
+            const response = await api.post<IResponse<IScanResponse>>(`/trip`, payload)
+            return response.data as IResponse<IScanResponse>
 
         },
-        onSuccess: (response: IResponse<any>) => {
+        onSuccess: (response: IResponse<IScanResponse>) => {
             if (response.success) {
                 toast.success(response.message);
                 setShowScanner(false);
+
+                if (response.data?.type === "payment") {
+                    const paymentUrl = response.data.payment?.data?.payment_url;
+
+                    if (paymentUrl) {
+                        window.open(paymentUrl, "_blank", "noopener,noreferrer");
+
+                    } else {
+                        toast.error("Payment URL not found. Please check your history.");
+                    }
+                }
             } else {
                 toast.error(response.message);
             }

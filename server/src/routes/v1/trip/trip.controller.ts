@@ -12,6 +12,13 @@ const TripController = {
 
         const data = await TripService.handleQrScan(payload, userId)
         sendSuccess(res, data, "Qr scan handled successfully", 200)
+    }),
+    handlePaymentVerification: asyncHandler(async (req: Request, res: Response) => {
+
+        const { pidx } = req.body
+
+        const data = await TripService.handlePaymentVerification(pidx)
+        sendSuccess(res, data, "Payment Verified successfully", 200)
     })
 
 }

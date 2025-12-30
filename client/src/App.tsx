@@ -9,6 +9,7 @@ import RouteDetail from "@/pages/routeDetail";
 import ShareQrPage from "./components/custom/qr";
 import Layout from "@/pages/layout";
 import History from "./pages/history";
+import PaymentSuccess from "./pages/success";
 
 import AdminDashboard from "@/pages/admin/dashboard";
 import RouteManagement from "@/pages/admin/route";
@@ -37,6 +38,7 @@ const AppRoutes = () => {
                         <Route path="route/:routeId" element={<RouteDetail />} />
                         <Route path="share-qr" element={<ShareQrPage />} />
                         <Route path="history" element={<History />} />
+                        <Route path="payment/success" element={<PaymentSuccess />} />
                     </Route>
 
                     <Route element={<AdminRoute />}>

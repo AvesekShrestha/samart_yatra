@@ -63,3 +63,10 @@ export class InternalServerError extends CustomError {
         Object.setPrototypeOf(this, InternalServerError.prototype)
     }
 }
+export class PaymentError extends CustomError {
+
+    constructor(message: string = "Payment error occured", details?: IAurgmentException[]) {
+        super(message, 400, details)
+        Object.setPrototypeOf(this, PaymentError.prototype)
+    }
+}
