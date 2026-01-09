@@ -141,7 +141,7 @@ const RouteMap = ({ route, vehicleLocations, userPosition, isLocating, currentVe
 
                 {Object.values(vehicleLocations).map((v) => (
                     <Marker key={v.vehicleId} position={[Number(v.location.lat), Number(v.location.long)]} icon={icons.vehicle}>
-                        <Popup><div className="text-xs font-bold uppercase">Bus: {v.vehicleId.slice(-4)}</div></Popup>
+                        <Popup><div className="text-xs font-bold uppercase">Bus:{v.vehicleId}</div></Popup>
                     </Marker>
                 ))}
 
